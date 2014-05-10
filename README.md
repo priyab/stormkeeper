@@ -1,4 +1,4 @@
 stormkeeper
 ===========
 
-Manages auth tokes provided by the BiS component
+Manages auth tokens provided by the BiS component
