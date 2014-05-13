@@ -12,28 +12,36 @@ class StormKeeper
 	tokenMaxDuration = (240 * 1000) # 240 seconds
 
     tokenschema =
-	    name : "token"
+	    name : "tokens"
 	    type : "object"
 	    additionalProperties : false
 	    properties :
 		    id: {"type":"string","required":false}
 		    name: {"type":"string","required":false}
-		    domain-id: {"type":"string","required":true}
-		    identity-id: {"type":"string","required":true}
-		    access-list:
-			    items: {"type": "string"}
+		    domainId: {"type":"string","required":true}
+		    identityId: {"type":"string","required":true}
+            userData:
+                type: "array"
+                items:
+                    type: "object"
+                    required: false
+                    additionalProperties: true
+                    properties:
+                        accountId: {"type":"string", "required":false}
+                        userEmail: {"type":"string", "required":false}
+		    rulesId: {"type":"string","required":true}
 		    expiry: {"type":"string","required":true}
 		    lastModified: {"type":"string","required":false}
 
     ruleschema =
-	    name : "rule"
+	    name : "rules"
 	    type : "object"
 	    additionalProperties : false
 	    properties :
 		    id: {"type":"string","required":false}
 		    name: {"type":"string","required":false}
-		    method: {"type":"string","required":true}
-		    url: {"type":"string","required":true}
+		    rules: {"type":"string","required":true}
+		    role: {"type":"string","required":true}
 
 	constructor : ->
 	    util.log 'stormkeeper constructor called'
