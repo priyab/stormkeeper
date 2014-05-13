@@ -12,9 +12,9 @@ stormkeeper = require('./stormkeeper') @include
 
     @get '/tokens/:id', loadToken, ->
         stormkeeper.getTokensById @params.id, (res) =>
-            util.log token
-            unless token instanceof Error
-                @send token
+            util.log res
+            unless res instanceof Error
+                @send res
             else
                 @next 404 
 
@@ -23,7 +23,7 @@ stormkeeper = require('./stormkeeper') @include
     # 2. destructure the inbound object with proper schema
     validateToken = ->
         util.log @body
-        result = stormkeeper.checkshema @body
+        result = stormkeeper.checktokenschema @body
         util.log result
         return @next new Error "Invalid token posting!: #{result.errors}" unless result.valid
         @next()
@@ -39,7 +39,7 @@ stormkeeper = require('./stormkeeper') @include
 
     @post '/tokens', validateToken, ->
         util.log @body
-        token = stormkeeper.new @body, @params.id
+        token = stormkeeper.newToken @body, @params.id
         stormkeeper.add token, (res) =>
             unless res instanceof Error
                 @send res
@@ -47,13 +47,12 @@ stormkeeper = require('./stormkeeper') @include
                 @next new Error "Invalid token posting! #{res}"
 
     @put '/tokens/:id', validateToken, ->
-        # XXX - can have intelligent merge here
 
         # PUT VALIDATION
         # 1. need to make sure the incoming JSON is well formed
         # 2. destructure the inbound object with proper schema
         # 3. perform merge of inbound token data with existing data
-        token = stormkeeper.new @body, @params.id
+        token = stormkeeper.newToken @body, @params.id
 
         stormkeeper.update token, (res) =>
             unless res instanceof Error

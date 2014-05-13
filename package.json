@@ -31,7 +31,7 @@
 	},
 	"main": "./lib/stormkeeper",
 	"config": {
-		"port": 5000,
+		"port": 8333,
 		"logfile": "/var/log/stormkeeper.log",
 		"datadir": "/var/stormkeeper",
 		"stormflash": {

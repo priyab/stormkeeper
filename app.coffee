@@ -20,7 +20,7 @@ catch error
     util.log "stormkeeper using default storm parameters..."
     # whether error with config parsing or not, we will handle using config
     config=
-        port : 5000, #default port
+        port : 8333, #default port
         logfile : "/var/log/stormkeeper.log",
         datadir : "/var/stormkeeper",
         serialKey : "unknown",
