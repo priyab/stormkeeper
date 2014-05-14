@@ -15,29 +15,29 @@ class StormKeeper
         name : "tokens"
         type : "object"
         additionalProperties : false
-	properties :
-	    id: {"type":"string","required":false}
-	    name: {"type":"string","required":false}
-	    domainId: {"type":"string","required":true}
-	    identityId: {"type":"string","required":true}
-	    userData:
-                type: "array"
-                items:
-                    type: "object"
-                    required: false
-                    additionalProperties: true
-                    properties:
-                        accountId: {"type":"string", "required":false}
-                        userEmail: {"type":"string", "required":false}
-	    rulesId: {"type":"string","required":true}
-	    expiry: {"type":"string","required":true}
-	    lastModified: {"type":"string","required":false}
+	    properties :
+	        id: {"type":"string","required":false}
+	        name: {"type":"string","required":false}
+	        domainId: {"type":"string","required":true}
+	        identityId: {"type":"string","required":true}
+		userData:
+                    type: "array"
+                    items:
+                        type: "object"
+                        required: false
+                        additionalProperties: true
+                        properties:
+                            accountId: {"type":"string", "required":false}
+                            userEmail: {"type":"string", "required":false}
+	        rulesId: {"type":"string","required":true}
+	        expiry: {"type":"string","required":true}
+	        lastModified: {"type":"string","required":false}
 
     ruleschema =
         name : "rules"
         type : "object"
         additionalProperties : false
-	properties :
+        properties :
 	    id: {"type":"string","required":false}
 	    name: {"type":"string","required":false}
 	    rules: {"type":"string","required":true}
@@ -61,21 +61,22 @@ class StormKeeper
         id = uuid.v4()
         return id
 
-    newEntry: (entry,id) ->
+    newEntry: (data,id) ->
+	entry = {}
 	if id
-            entry.id = id
+	    entry.id = id
         else
             entry.id = @new() 
         return entry
 
     getRelativeDB: (type) ->
         util.log 'DB type: ' + type
-        keeperDb = ''
-        switch (type)
-          when "TOKENS"
-	    keeperDb = db.tokensdb
-          when "RULES"
-	    keeperDb = db.rulesdb
+	keeperDb = ''
+	switch (type)
+	    when "TOKENS"
+	        keeperDb = db.tokensdb
+	    when "RULES"
+	        keeperDb = db.rulesdb
         return keeperDb
 
     checkentryschema: (type, entry) ->
