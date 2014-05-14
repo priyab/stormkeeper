@@ -73,9 +73,9 @@ class StormKeeper
         keeperDb = ''
         switch (type)
           when "TOKENS"
-	    keeperDb = db.tokensdb
+            keeperDb = db.tokensdb
           when "RULES"
-	    keeperDb = db.rulesdb
+            keeperDb = db.rulesdb
         return keeperDb
 
     checkentryschema: (type, entry) ->
@@ -90,7 +90,6 @@ class StormKeeper
 	        error = new Error("Invalid entry posting!")
 	        throw error unless result.valid
 	        return result
-
 
     getEntriesById: (type, id, callback) ->
         util.log "looking up entry ID: #{id}"
@@ -111,30 +110,31 @@ class StormKeeper
             util.log 'listing...'
 	    return res
 
-    getRules: (role, callback) ->
+    getRulesbyRole: (role, callback) ->
         if role
             @db.rulesdb.forEach (key,val) ->
-	        ruleEntry = db.rulesdb.get key
-                    for ruleKey, ruleValue of ruleEntry
-                        if ruleKey == 'role'
-		            util.log 'Entry #{entry.id} for the role'+ role
-		            return callback(ruleEntry)
-		            return callback new Error "Entry not found for the role: #{role}"
-	else
-	    res = { 'tokens': [] }
-	    @db.tokensdb.forEach (key,val) ->
-	        res.tokens.push val if val
-	    util.log 'listing...'
-	    return callback(res)
+                ruleEntry = db.rulesdb.get key
+                for ruleKey, ruleValue of ruleEntry
+                    if ruleKey == role
+                        util.log 'Entry #{entry.id} for the role'+ role
+                        return callback(ruleEntry)
+	return callback new Error "Entry not found for the role: #{role}"
+
+    getRulesbyRole: (role, callback) ->
+        res = { 'rules': [] }
+	@db.rulesdb.forEach (key,val) ->
+	    res.rules.push val if val
+	util.log 'listing...'
+	return callback(res)
 
     # For POST /tokens, POST /rules endpoint
     add: (type, entry, callback) ->
         @checkentryschema type, entry, (error) =>
             unless error instanceof Error
                 # add entry into stormkeeper db
-	            keeperdb = @getRelativeDB type
+	        keeperdb = @getRelativeDB type
                 @db.keeperdb.set entry.id, entry, ->
-                    callback(entry)
+                    return callback(entry)
             else
                 util.log 'entry check: '+ error
                 return callback new Error "#{entry.id} entry not added!"
@@ -149,11 +149,11 @@ class StormKeeper
 
     # To remove entry-id from DB
     remove: (type, entry, callback) ->
-            util.log 'StormKeeper in DEL entry'
-	        keeperdb = @getRelativeDB type
-            @db.keeperdb.rm entry.id, =>
-                util.log "removed entry ID: #{entry.id}"
-                callback({result:200})
+        util.log 'StormKeeper in DEL entry'
+	keeperdb = @getRelativeDB type
+        @db.keeperdb.rm entry.id, =>
+            util.log "removed entry ID: #{entry.id}"
+            callback({result:200})
 
     #This function is to decrement expiry in token
     DecrementExpiryInToken: (token,connectionTick) ->
@@ -163,19 +163,19 @@ class StormKeeper
                 token[tokenKey] = (token[tokenKey] - connectionTick) 
                 #TODO - Cleanup only for stormflash agents
                 if token[tokenKey] < 1
-                   @db.tokensdb.rm token.id, =>
-                   util.log "removed token ID: #{token.id}"
+                    @db.tokensdb.rm token.id, =>
+                    util.log "removed token ID: #{token.id}"
 
     #This function resets the tokenExpiry to tokenMaxDuration. This function is called upon "PUT /tokens/:id" 
     resetTokenExpiry: (token) ->
         try
             util.log "resetTokenExpiry for #{token.id}"
-	        tokenEntry = @db.tokensdb.get token.id
-	        if tokenEntry
-                    for tokenKey, tokenValue of tokenEntry
-                        if tokenKey == 'expiry'
-                            tokenEntry[tokenKey] = tokenMaxDuration 
-                            util.log tokenEntry
+	    tokenEntry = @db.tokensdb.get token.id
+	    if tokenEntry
+                for tokenKey, tokenValue of tokenEntry
+                    if tokenKey == 'expiry'
+                        tokenEntry[tokenKey] = tokenMaxDuration 
+                        util.log tokenEntry
         catch err
             util.log err
 

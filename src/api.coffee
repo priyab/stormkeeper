@@ -50,13 +50,20 @@ stormkeeper = require('./stormkeeper') @include
 
     @get '/rules': ->
         role = @req.query.role
-        stormkeeper.getRules role, (res) =>
-            util.log res
-            unless res instanceof Error
-                @send res
-            else
-                @next 404 
-
+        if role?
+            stormkeeper.getRulesbyRole role, (res) =>
+                util.log res
+                unless res instanceof Error
+                    @send res
+                else
+                    @next 404 
+        else
+            stormkeeper.getRules (res) =>
+                util.log res
+                unless res instanceof Error
+                    @send res
+                else
+                    @next 404 
 
     @get '/rules/:id', ->
         stormkeeper.getEntriesById 'RULES', @params.id, (res) =>
