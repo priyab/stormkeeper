@@ -1,3 +1,4 @@
+
 class StormKeeper
 
     validate = require('json-schema').validate
@@ -16,22 +17,22 @@ class StormKeeper
         type: "object"
         additionalProperties: false
         properties:
-    	    id: {"type":"string","required":false}
-    	    name: {"type":"string","required":false}
-    	    domainId: {"type":"string","required":true}
-    	    identityId: {"type":"string","required":true}
-            rulesId: {"type":"string","required":true}
-    	    expiry: {"type":"string","required":true}
-    	    lastModified: {"type":"string","required":false}
-    	    userData:
-                    type: "array"
-                    items:
-                        type: "object"
-                        required: false
-                        additionalProperties: true
-                        properties:
-                            accountId: {"type":"string", "required":false}
-                            userEmail: {"type":"string", "required":false}
+            id: { type:"string","required":false}
+            name: { type:"string","required":false}
+            domainId: { type:"string","required":true}
+            identityId: { type:"string","required":true}
+            rulesId: { type:"string","required":true}
+            expiry: { type:"string","required":true}
+            lastModified: { type:"string","required":false}
+            userData:
+                type: "array"
+                items:
+                    type: "object"
+                    required: false
+                    additionalProperties: true
+                    properties:
+                        accountId: {"type":"string", "required":false}
+                        userEmail: {"type":"string", "required":false}
 
     ruleschema =
         name : "rules"
@@ -43,19 +44,26 @@ class StormKeeper
     	    rules: {"type":"string","required":true}
     	    role: {"type":"string","required":true}
 
-    constructor : ->
+    constructor: ->
         util.log 'stormkeeper constructor called'
-    	@db = db =
-    	    tokensdb: require('dirty') '/var/stormkeeper/tokens.db'
-    	    rulesdb: require('dirty') '/var/stormkeeper/rules.db'
-    	@db.tokensdb.on 'load', ->
-    	    util.log 'loaded tokens.db'
+
+        @db =
+            tokensdb: require('dirty') '/var/stormkeeper/tokens.db'
+            rulesdb: require('dirty') '/var/stormkeeper/rules.db'
+
+        @db.tokensdb._writeStream.on 'error', (err) ->
+            util.log err
+        @db.rulesdb._writeStream.on 'error', (err) ->
+            util.log err
+
+        @db.tokensdb.on 'load', ->
+            util.log 'loaded tokens.db'
             @forEach (key,val) ->
-    	        util.log 'Tokens found ' + key if val
-    	@db.rulesdb.on 'load', ->
-    	    util.log 'loaded rules.db'
-    	    @forEach (key,val) ->
-    	        util.log 'Rules found ' + key if val
+                util.log 'Tokens found ' + key if val
+        @db.rulesdb.on 'load', ->
+            util.log 'loaded rules.db'
+            @forEach (key,val) ->
+                util.log 'Rules found ' + key if val
 
     new: ->
         id = uuid.v4()
@@ -104,10 +112,10 @@ class StormKeeper
             return callback new Error "Entry not found: #{entry.id}"
 
     getTokens: ->
-      	res = 
-      	    tokens: [] 
-    	@db.tokensdb.forEach (key,val) ->
-    	    res.tokens.push val if val
+        res =
+            tokens: []
+        @db.tokensdb.forEach (key,val) ->
+            res.tokens.push val if val
             util.log 'listing...'
         return res
 
@@ -123,15 +131,15 @@ class StormKeeper
                         util.log 'Entry for the role'+ usertype
                         return callback(ruleEntry)
                 util.log 'Entry for the role'+ usertype
-    	return callback new Error "Entry not found for the role: #{usertype}"
+        callback new Error "Entry not found for the role: #{usertype}"
 
     getRules: (callback) ->
         res =
             rules: []
-    	@db.rulesdb.forEach (key,val) ->
-    	    res.rules.push val if val
-        	util.log 'listing...'
-    	return callback(res)
+        @db.rulesdb.forEach (key,val) ->
+            res.rules.push val if val
+            util.log 'listing...'
+        callback(res)
 
     # For POST /tokens, POST /rules endpoint
     add: (type, entry, callback) ->
@@ -144,7 +152,7 @@ class StormKeeper
                         return callback(entry)
                 else
                     util.log 'entry check: '+ error
-                    return callback new Error "#{entry.id} entry not added!"
+                    callback new Error "#{entry.id} entry not added!"
 
     # For PUT /tokens, PUT /rules endpoint
     update: (type, entry, callback) ->
@@ -158,7 +166,7 @@ class StormKeeper
     remove: (type, entry, callback) ->
         util.log 'StormKeeper in DEL entry'
         keeperdb = @getRelativeDB type
-        if entry? 
+        if entry?
             @db.keeperdb.rm entry.id, =>
                 util.log "removed entry ID: #{entry.id}"
                 callback({result:200})
@@ -210,3 +218,4 @@ module.exports = (args) ->
     if not instance?
         instance = new StormKeeper args
     return instance
+
