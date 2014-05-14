@@ -1,25 +1,25 @@
 class StormKeeper
 
-	validate = require('json-schema').validate
-	uuid = require('node-uuid')
-	util = require('util')
+    validate = require('json-schema').validate
+    uuid = require('node-uuid')
+    util = require('util')
 
-	#Stormkeeper decrements the db entries 'expiry' at every cleanupInterval
-	#Cleans up the entries when expiry is 0
-	cleanupInterval= (5 * 1000) # 5 seconds
+    #Stormkeeper decrements the db entries 'expiry' at every cleanupInterval
+    #Cleans up the entries when expiry is 0
+    cleanupInterval= (5 * 1000) # 5 seconds
 
-	#Stormkeeper default token expiry value 
-	tokenMaxDuration = (240 * 1000) # 240 seconds
+    #Stormkeeper default token expiry value 
+    tokenMaxDuration = (240 * 1000) # 240 seconds
 
     tokenschema =
-	    name : "tokens"
-	    type : "object"
-	    additionalProperties : false
+        name : "tokens"
+        type : "object"
+        additionalProperties : false
 	    properties :
-		    id: {"type":"string","required":false}
-		    name: {"type":"string","required":false}
-		    domainId: {"type":"string","required":true}
-		    identityId: {"type":"string","required":true}
+	        id: {"type":"string","required":false}
+	        name: {"type":"string","required":false}
+	        domainId: {"type":"string","required":true}
+	        identityId: {"type":"string","required":true}
             userData:
                 type: "array"
                 items:
@@ -29,22 +29,22 @@ class StormKeeper
                     properties:
                         accountId: {"type":"string", "required":false}
                         userEmail: {"type":"string", "required":false}
-		    rulesId: {"type":"string","required":true}
-		    expiry: {"type":"string","required":true}
-		    lastModified: {"type":"string","required":false}
+	        rulesId: {"type":"string","required":true}
+	        expiry: {"type":"string","required":true}
+	        lastModified: {"type":"string","required":false}
 
     ruleschema =
-	    name : "rules"
-	    type : "object"
-	    additionalProperties : false
-	    properties :
-		    id: {"type":"string","required":false}
-		    name: {"type":"string","required":false}
-		    rules: {"type":"string","required":true}
-		    role: {"type":"string","required":true}
+        name : "rules"
+        type : "object"
+        additionalProperties : false
+        properties :
+	        id: {"type":"string","required":false}
+	        name: {"type":"string","required":false}
+	        rules: {"type":"string","required":true}
+	        role: {"type":"string","required":true}
 
-	constructor : ->
-	    util.log 'stormkeeper constructor called'
+    constructor : ->
+        util.log 'stormkeeper constructor called'
 	    @db = db = 
 	        tokensdb: require('dirty') '/var/stormkeeper/tokens.db'
 	        rulesdb: require('dirty') '/var/stormkeeper/rules.db'
@@ -57,44 +57,17 @@ class StormKeeper
 	        @forEach (key,val) ->
 	            util.log 'Rules found ' + key if val 
 
-	checktokenschema: (token) ->
-	    if tokenschema?
-		    util.log 'performing tokenschema validation on token posting'
-		    return new Error "token data is missing" unless token
-		    result = validate token, tokenschema 
-		    error = new Error("Invalid token posting!")
-		    throw error unless result.valid
-		    return result
-
     new: ->
         id = uuid.v4()
         return id
 
-	newToken: (data,id) ->
-		token = {}
+	newEntry: (data,id) ->
+		entry = {}
 		if id
-		    token.id = id
+		    entry.id = id
 	    else
-            token.id = @new() 
-	    return token
-
-	getTokensById: (id, callback) ->
-	    util.log "looking up token ID: #{id}"
-	    entry = @db.tokensdb.get id
-	    if entry
-	        result = @checktokenschema entry
-	        util.log result
-	        return callback new Error "Invalid token retrieved: #{result.errors}" unless result.valid 
-	        return callback(entry)
-	    else
-	        return callback new Error "Token not found: #{token}"
-
-	getTokens: ->
-		res = { 'tokens': [] }
-		@db.tokensdb.forEach (key,val) ->
-		    res.tokens.push val if val
-		util.log 'listing...'
-		return res
+            entry.id = @new() 
+	    return entry
 
     getRelativeDB: (type) ->
         util.log 'DB type: ' + type
@@ -106,30 +79,81 @@ class StormKeeper
 		        keeperDb = db.rulesdb
 	    return keeperDb
 
-    # For POST /tokens endpoint
-    add: (token, callback) ->
-        @checktokenschema token, (error) =>
-            unless error instanceof Error
-                # add token into stormkeeper db
-                @db.tokensdb.set token.id, token, ->
-                    callback(token)
-            else
-                util.log 'token check: '+ error
-                return callback new Error "#{token.id} token not added!"
+    checkentryschema: (type, entry) ->
+        if type == 'TOKENS'
+            @entryschema = tokenschema
+        if type == 'RULES'
+            @entryschema = ruleschema
+        if entryschema?
+	        util.log 'performing entryschema validation on a new entry posting'
+	        return new Error "Entry data is missing" unless token
+	        result = validate entry, entryschema 
+	        error = new Error("Invalid entry posting!")
+	        throw error unless result.valid
+	        return result
 
-    # For PUT /tokens endpoint
-    update: (token, callback) ->
-        if token.id
-            @add token, (res) =>
+
+	getEntriesById: (type, id, callback) ->
+	    util.log "looking up entry ID: #{id}"
+	    keeperdb = @getRelativeDB type
+	    entry = @db.keeperdb.get id
+	    if entry
+	        result = @checkentryschema type, entry
+	        util.log result
+	        return callback new Error "Invalid entry retrieved: #{result.errors}" unless result.valid 
+	        return callback(entry)
+	    else
+	        return callback new Error "Entry not found: #{entry.id}"
+
+	getTokens: ->
+		res = { 'tokens': [] }
+		@db.tokensdb.forEach (key,val) ->
+		    res.tokens.push val if val
+		util.log 'listing...'
+		return res
+
+    getRules: (role, callback) ->
+        if role
+	        @db.rulesdb.forEach (key,val) ->
+		        ruleEntry = db.rulesdb.get key
+                    for ruleKey, ruleValue of ruleEntry
+                        if ruleKey == 'role'
+		                    util.log 'Entry #{entry.id} for the role'+ role
+		                    return callback(ruleEntry)
+		    return callback new Error "Entry not found for the role: #{role}"
+		else
+		    res = { 'tokens': [] }
+		    @db.tokensdb.forEach (key,val) ->
+		        res.tokens.push val if val
+		    util.log 'listing...'
+		    return callback(res)
+
+    # For POST /tokens, POST /rules endpoint
+    add: (type, entry, callback) ->
+        @checkentryschema type, entry, (error) =>
+            unless error instanceof Error
+                # add entry into stormkeeper db
+	            keeperdb = @getRelativeDB type
+                @db.keeperdb.set entry.id, entry, ->
+                    callback(entry)
+            else
+                util.log 'entry check: '+ error
+                return callback new Error "#{entry.id} entry not added!"
+
+    # For PUT /tokens, PUT /rules endpoint
+    update: (type, entry, callback) ->
+        if entry.id
+            @add type, entry, (res) =>
                 callback res
         else
             callback new Error "Could not find ID! #{id}"
 
-    # To remove token-id from DB
-    remove: (token, callback) ->
-            util.log 'StormKeeper in DEL token'
-            @db.tokensdb.rm token.id, =>
-                util.log "removed token ID: #{token.id}"
+    # To remove entry-id from DB
+    remove: (type, entry, callback) ->
+            util.log 'StormKeeper in DEL entry'
+	        keeperdb = @getRelativeDB type
+            @db.keeperdb.rm entry.id, =>
+                util.log "removed entry ID: #{entry.id}"
                 callback({result:200})
 
     #This function is to decrement expiry in token
