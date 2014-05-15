@@ -52,8 +52,9 @@
     this.configure({
       development: function() {
         return _this.use({
-          errorHandler: {
-            dumpExceptions: true,
+	    :q!
+            ERRORHANDLER: {
+            DUMPEXCEPTIONSu: true,
             showStack: true
           }
         });
