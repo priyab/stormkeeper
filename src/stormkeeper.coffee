@@ -38,11 +38,11 @@ class StormKeeper
         name : "rules"
         type : "object"
         additionalProperties : false
-    	properties :
-    	    id: {"type":"string","required":false}
-    	    name: {"type":"string","required":false}
-    	    rules: {"type":"string","required":true}
-    	    role: {"type":"string","required":true}
+        properties :
+            id: {"type":"string","required":false}
+            name: {"type":"string","required":false}
+            rules: {"type":"string","required":true}
+            role: {"type":"string","required":true}
 
     constructor: ->
         util.log 'stormkeeper constructor called'
@@ -64,6 +64,11 @@ class StormKeeper
             util.log 'loaded rules.db'
             @forEach (key,val) ->
                 util.log 'Rules found ' + key if val
+
+        setInterval (=>
+            util.log "Cleanuptimer triggered for tokens"
+            @updateTokenExpiry(cleanupInterval)
+        ), cleanupInterval
 
     new: ->
         id = uuid.v4()
@@ -92,12 +97,12 @@ class StormKeeper
         if type == 'RULES'
             @entryschema = ruleschema
         if entryschema?
-	        util.log 'performing entryschema validation on a new entry posting'
-	        return new Error "Entry data is missing" unless token
-	        result = validate entry, entryschema
-	        error = new Error("Invalid entry posting!")
-	        throw error unless result.valid
-	        return result
+            util.log 'performing entryschema validation on a new entry posting'
+            return new Error "Entry data is missing" unless token
+            result = validate entry, entryschema
+            error = new Error("Invalid entry posting!")
+            throw error unless result.valid
+            return result
 
     getEntriesById: (type, id, callback) ->
         util.log "looking up entry ID: #{id}"
@@ -202,15 +207,10 @@ class StormKeeper
                 entry = db.get key
                 if entry
                     @DecrementExpiryInToken entry
-            res = getTokens()
-            util.log res
+            res = @getTokens()
+            util.log util.inspect res
         catch err
             util.log err
-
-    setInterval (=>
-        util.log "Cleanuptimer triggered for tokens"
-        @updateTokenExpiry(cleanupInterval)
-    ), cleanupInterval
 
 # SINGLETON CLASS OBJECT
 instance = null
