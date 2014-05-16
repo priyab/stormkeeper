@@ -16,7 +16,7 @@ util = require('util')
 			unless res instanceof Error
 				@send res
 			else
-				@next 404
+				@send 404
 
 	@post '/tokens': ->
 		util.log @body
@@ -51,14 +51,13 @@ util = require('util')
 
 	@get '/rules': ->
         try
-            query = require('url').parse(@request.url,true).query
-            role = query.role if query.role?
-
+            role = @request.query.role if @request.query.role?
             stormkeeper.getRules role, (rules) =>
                 if rules? and rules.length > 0
+                    util.log "#{@request.url}\n"+util.inspect rules
                     @send rules
                 else
-                    @next 404
+                    @send 404
         catch err
             @next err
 
@@ -68,7 +67,7 @@ util = require('util')
 			unless res instanceof Error
 				@send res
 			else
-				@next 404
+				@send 404
 
 	@post '/rules': ->
 		util.log util.inspect @body

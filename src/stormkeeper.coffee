@@ -47,8 +47,8 @@ class StormKeeper
 		util.log 'stormkeeper constructor called'
 
 		@db =
-			tokensdb: require('dirty') '/var/stormkeeper/tokens.db'
-			rulesdb: require('dirty') '/var/stormkeeper/rules.db'
+			tokensdb: require('dirty') '/tmp/tokens.db'
+			rulesdb: require('dirty') '/tmp/rules.db'
 
 		@db.tokensdb._writeStream.on 'error', (err) ->
 			util.log err
@@ -132,13 +132,9 @@ class StormKeeper
 	getRules: (usertype, callback) ->
 		rules = {}
 		@db.rulesdb.forEach (key,rule) ->
-			util.log "inspecting #{usertype} for #{key} = "+util.inspect rule
 			if usertype?
-				util.log "siva1"+util.inspect rule
-
 				for rulekey, rulevalue of rule
 					if rulevalue == usertype
-						util.log "siva"+util.inspect rule
 						return callback [ rule ]
 			else
 				# if the actual data is at the top
@@ -211,7 +207,7 @@ class StormKeeper
 	#Update the expiry value for every time tick
 	updateTokenExpiry: (connectionTick)->
 		try
-			@db.tokensdb.forEach (key,entry) ->
+			@db.tokensdb.forEach (key,entry) =>
 				if entry
 					@DecrementExpiryInToken entry, connectionTick
 			res = @getTokens()
