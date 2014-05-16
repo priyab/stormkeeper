@@ -51,13 +51,14 @@ util = require('util')
 
 	@get '/rules': ->
         try
-            query = require('url').parse(request.url,true).query
+            query = require('url').parse(@request.url,true).query
             role = query.role if query.role?
 
             stormkeeper.getRules role, (rules) =>
                 if rules? and rules.length > 0
-                    @send { rules }
-                @next 404
+                    @send rules
+                else
+                    @next 404
         catch err
             @next err
 

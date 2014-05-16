@@ -130,18 +130,21 @@ class StormKeeper
 		return res
 
 	getRules: (usertype, callback) ->
-        rules = {}
-
+		rules = {}
 		@db.rulesdb.forEach (key,rule) ->
-            util.log "inspecting #{key} = "+util.inspect rule
-            if usertype?
-                if usertype in rule
-                    return callback [ rule ]
-            else
-                # if the actual data is at the top
-                rules[key] = rule unless key in rules
-                # if the actual data is at the bottom
-                # rules[key] = rule
+			util.log "inspecting #{usertype} for #{key} = "+util.inspect rule
+			if usertype?
+				util.log "siva1"+util.inspect rule
+
+				for rulekey, rulevalue of rule
+					if rulevalue == usertype
+						util.log "siva"+util.inspect rule
+						return callback [ rule ]
+			else
+				# if the actual data is at the top
+				rules[key] = rule unless key in rules
+				# if the actual data is at the bottom
+				# rules[key] = rule
 		callback (entry for entry of rules)
 
 	# For POST /tokens, POST /rules endpoint
@@ -176,7 +179,7 @@ class StormKeeper
 		util.log 'StormKeeper in DEL entry'
 		keeperdb = @getRelativeDB type
 		if entry?
-			@db.keeperdb.rm entry.id, =>
+			keeperdb.rm entry.id, =>
 				util.log "removed entry ID: #{entry.id}"
 				callback({result:200})
 
@@ -208,10 +211,9 @@ class StormKeeper
 	#Update the expiry value for every time tick
 	updateTokenExpiry: (connectionTick)->
 		try
-			@db.tokensdb.forEach (key,val) ->
-				entry = db.get key
+			@db.tokensdb.forEach (key,entry) ->
 				if entry
-					@DecrementExpiryInToken entry
+					@DecrementExpiryInToken entry, connectionTick
 			res = @getTokens()
 			#util.log util.inspect res
 		catch err
