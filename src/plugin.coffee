@@ -6,6 +6,7 @@ util = require('util')
 
 @include = ->
 	@get '/tokens': ->
+		util.log "#{@request.url}\n"
 		res = stormkeeper.getTokens()
 		util.log util.inspect res
 		@send res
@@ -19,13 +20,12 @@ util = require('util')
 				@send 404
 
 	@post '/tokens': ->
-		util.log @body
 		entry = stormkeeper.newEntry @body, ''
 		stormkeeper.add 'TOKENS', entry, (res) =>
 			unless res instanceof Error
 				@send res
 			else
-				@next new Error "Invalid token posting! #{res}"
+				@send new Error "Invalid token posting! #{res}"
 
 	@put '/tokens/:id': ->
 
@@ -39,7 +39,7 @@ util = require('util')
 			unless res instanceof Error
 				@send res
 			else
-				@next new Error "Invalid token posting! #{res}"
+				@send new Error "Invalid token posting! #{res}"
 
 	@del '/tokens/:id': ->
 		# 1. remove the token entry from DB
@@ -47,19 +47,19 @@ util = require('util')
 			unless res instanceof Error
 				@send { deleted: true }
 			else
-				@next res
+				@send res
 
 	@get '/rules': ->
-        try
-            role = @request.query.role if @request.query.role?
-            stormkeeper.getRules role, (rules) =>
-                if rules? and rules.length > 0
-                    util.log "#{@request.url}\n"+util.inspect rules
-                    @send rules
-                else
-                    @send 404
-        catch err
-            @next err
+		try
+			role = @request.query.role if @request.query.role?
+			stormkeeper.getRules role, (rules) =>
+				if rules? and rules.length > 0
+					util.log "#{@request.url}\n"+util.inspect rules
+					@send rules
+				else
+					@send 404
+		catch err
+			@send err
 
 	@get '/rules/:id': ->
 		stormkeeper.getEntriesById 'RULES', @params.id, (res) =>
@@ -78,7 +78,7 @@ util = require('util')
 				util.log util.inspect res
 				@send res
 			else
-				@next new Error "Invalid rule posting! #{res}"
+				@send new Error "Invalid rule posting! #{res}"
 
 	@put '/rules/:id': ->
 
@@ -92,7 +92,7 @@ util = require('util')
 			unless res instanceof Error
 				@send res
 			else
-				@next new Error "Invalid rule posting! #{res}"
+				@send new Error "Invalid rule posting! #{res}"
 
 	@del '/rules/:id': ->
 		# 1. remove the token entry from DB
@@ -100,4 +100,4 @@ util = require('util')
 			unless res instanceof Error
 				@send { deleted: true }
 			else
-				@next res
+				@send res

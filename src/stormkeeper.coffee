@@ -47,8 +47,8 @@ class StormKeeper
 		util.log 'stormkeeper constructor called'
 
 		@db =
-			tokensdb: require('dirty') '/tmp/tokens.db'
-			rulesdb: require('dirty') '/tmp/rules.db'
+			tokensdb: require('dirty') '/var/stormkeeper/tokens.db'
+			rulesdb: require('dirty') '/var/stormkeeper/rules.db'
 
 		@db.tokensdb._writeStream.on 'error', (err) ->
 			util.log err
@@ -81,7 +81,7 @@ class StormKeeper
 		return entry
 
 	getRelativeDB: (type) ->
-		util.log 'DB type: ' + type
+		#util.log 'DB type: ' + type
 		keeperDb = ''
 		switch (type)
 			when "TOKENS"
@@ -94,9 +94,7 @@ class StormKeeper
 		if type == 'TOKENS'
 			entryschema = tokenschema
 		if type == 'RULES'
-			util.log 'performing ruleschema validation on a new entry posting'
 			entryschema = ruleschema
-			util.log 'siva'
 		if entryschema?
 			util.log 'performing entryschema validation on a new entry posting'
 			return new Error "Entry data is missing" unless entry
@@ -110,23 +108,20 @@ class StormKeeper
 	getEntriesById: (type, id, callback) ->
 		util.log "looking up entry ID: #{id}"
 		keeperdb = @getRelativeDB type
-		util.log "siva1 looking up entry ID: #{id}"
 		entry = keeperdb.get id
-		util.log "siva2 looking up entry ID: #{id}"
 		if entry?
 			@checkentryschema type, entry, (result) =>
 				util.log result
 				return callback new Error "Invalid entry retrieved: #{result.errors}" unless result.valid
 				return callback(entry)
 		else
-			return callback new Error "Entry not found: #{entry.id}"
+			return callback new Error "Entry not found: #{id}"
 
 	getTokens: ->
 		res =
 			tokens: []
 		@db.tokensdb.forEach (key,val) ->
 			res.tokens.push val if val
-			util.log 'listing...'
 		return res
 
 	getRules: (usertype, callback) ->
@@ -146,7 +141,6 @@ class StormKeeper
 	# For POST /tokens, POST /rules endpoint
 	add: (type, entry, callback) ->
 		if type? and entry? and entry.id
-			util.log util.inspect 'siva:'+entry.id
 			@checkentryschema type, entry, (error) =>
 				util.log util.inspect entry
 				unless error instanceof Error
@@ -180,12 +174,12 @@ class StormKeeper
 				callback({result:200})
 
 	#This function is to decrement expiry in token
-	DecrementExpiryInToken: (token,connectionTick) ->
-		util.log 'StormKeeper in cleanup tokens' + connectionTick
+	DecrementExpiryInToken: (token,tokenTick) ->
+		util.log 'Decrement Expiry In Token by '+tokenTick+'ms'
 		for tokenKey, tokenValue of token
 			if tokenKey == 'expiry'
-				token[tokenKey] = (token[tokenKey] - connectionTick)
-				util.log util.inspect token[tokenKey]
+				token[tokenKey] = (token[tokenKey] - tokenTick)
+				util.log "Current Expiry value is "+util.inspect token[tokenKey]+'ms'
 				#TODO - Cleanup only for stormflash agents
 				if token[tokenKey] < 1
 					@db.tokensdb.rm token.id, =>
@@ -205,11 +199,11 @@ class StormKeeper
 			util.log err
 
 	#Update the expiry value for every time tick
-	updateTokenExpiry: (connectionTick)->
+	updateTokenExpiry: (tokenTick)->
 		try
 			@db.tokensdb.forEach (key,entry) =>
 				if entry
-					@DecrementExpiryInToken entry, connectionTick
+					@DecrementExpiryInToken entry, tokenTick
 			res = @getTokens()
 			#util.log util.inspect res
 		catch err
