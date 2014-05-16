@@ -111,7 +111,7 @@ class StormKeeper
 		util.log "looking up entry ID: #{id}"
 		keeperdb = @getRelativeDB type
 		util.log "siva1 looking up entry ID: #{id}"
-		entry = @db.keeperdb.get id
+		entry = keeperdb.get id
 		util.log "siva2 looking up entry ID: #{id}"
 		if entry?
 			@checkentryschema type, entry, (result) =>
@@ -129,27 +129,20 @@ class StormKeeper
 			util.log 'listing...'
 		return res
 
-	getRulesbyRole: (usertype, callback) ->
-		util.log 'Entry for the role'+ usertype
-		if usertype?
-			util.log 'Entry for the role'+ usertype
-			@db.rulesdb.forEach (key,val) =>
-				ruleEntry = @db.rulesdb.get key
-				util.log 'Entry for the role'+ usertype
-				for ruleKey, ruleValue of ruleEntry
-					if usertype == ruleKey
-						util.log 'Entry for the role'+ usertype
-						return callback(ruleEntry)
-				util.log 'Entry for the role'+ usertype
-		callback new Error "Entry not found for the role: #{usertype}"
+	getRules: (usertype, callback) ->
+        rules = {}
 
-	getRules: (callback) ->
-		res =
-			rules: []
-		@db.rulesdb.forEach (key,val) ->
-			res.rules.push val if val
-			util.log 'listing...'
-		callback(res)
+		@db.rulesdb.forEach (key,rule) ->
+            util.log "inspecting #{key} = "+util.inspect rule
+            if usertype?
+                if usertype in rule
+                    return callback [ rule ]
+            else
+                # if the actual data is at the top
+                rules[key] = rule unless key in rules
+                # if the actual data is at the bottom
+                # rules[key] = rule
+		callback (entry for entry of rules)
 
 	# For POST /tokens, POST /rules endpoint
 	add: (type, entry, callback) ->

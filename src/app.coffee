@@ -46,4 +46,4 @@ catch error
       production: => @use 'errorHandler'
 
     @enable 'serve jquery', 'minify'
-    @include './api'
+    @include './plugin'

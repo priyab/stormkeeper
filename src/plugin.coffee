@@ -50,23 +50,16 @@ util = require('util')
 				@next res
 
 	@get '/rules': ->
-		role = ''
-		if @req.query.role?
-			role = @req.query.role
-			util.log util.inspect @req.query.role
-			stormkeeper.getRulesbyRole role, (res) =>
-				util.log res
-				unless res instanceof Error
-					@send res
-				else
-					@next 404
-		else
-			stormkeeper.getRules (res) =>
-				util.log res
-				unless res instanceof Error
-					@send res
-				else
-					@next 404
+        try
+            query = require('url').parse(request.url,true).query
+            role = query.role if query.role?
+
+            stormkeeper.getRules role, (rules) =>
+                if rules? and rules.length > 0
+                    @send { rules }
+                @next 404
+        catch err
+            @next err
 
 	@get '/rules/:id': ->
 		stormkeeper.getEntriesById 'RULES', @params.id, (res) =>
