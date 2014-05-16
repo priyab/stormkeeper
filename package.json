@@ -40,6 +40,6 @@
 		"start": "node lib/app.js"
 	},
 	"contributors": [
-		"Add your name here"
+		"Peter K Lee"
 	]
 }
