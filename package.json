@@ -10,7 +10,6 @@
 	},
 	"dependencies": {
 		"stormagent": "0.1.x",
-       	"zappajs": "0.3.x",
 		"request": "2.34.x",
 		"json-schema": "0.2.0",
 		"async": "0.8.x",
@@ -32,8 +31,15 @@
 		"port": 8333,
 		"logfile": "/var/log/stormkeeper.log",
 		"datadir": "/var/stormkeeper",
-		"functions": [
-		]
+		"storm": {
+			"agent": true,
+			"functions": [
+				"agent.tokens"
+			],
+			"plugins": [
+				"lib/plugin"
+			]
+		}
 	},
 	"scripts": {
 		"prepublish": "find src -name '*.coffee' | xargs coffee -o lib -c",
