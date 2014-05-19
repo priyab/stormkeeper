@@ -1,34 +1,39 @@
 ##
 # STORMKEEPER /tokens REST end-points
 
+require './stormkeeper'
+
 @include = ->
 
     agent = @settings.agent
     log = agent.log
 
+    ###
+    # only uncomment during development...
     @get '/tokens': ->
-        log "#{@request.method} #{@request.url}"
-        res = agent.getTokens()
-        log "result", res
-        @send res
-
-    @get '/tokens/:id': ->
-        log "#{@request.method} #{@request.url}"
-        agent.getEntriesById 'TOKENS', @params.id, (res) =>
-            log "result", res
-            unless res instanceof Error
-                @send res
-            else
-                @send 404
+        @send agent.tokens.list()
+    ###
 
     @post '/tokens': ->
-        log "#{@request.method} #{@request.url}"
-        entry = agent.newEntry @body, ''
-        agent.add 'TOKENS', entry, (res) =>
+        token = new StormToken @body
+        if token?
+            @send agent.tokens.add token
+        else
+            @send new Error "Invalid token posting!"
+
+    @get '/tokens/:id': ->
+        match = agent.tokens.get @params.id
+        if match?
+            @send match.data
+        else
+            @send 404
+
+    @del '/tokens/:id': ->
+        agent.tokens.rm @params.id
             unless res instanceof Error
-                @send res
+                @send { deleted: true }
             else
-                @send new Error "Invalid token posting! #{res}"
+                @send res
 
     @put '/tokens/:id': ->
 
@@ -44,15 +49,6 @@
                 @send res
             else
                 @send new Error "Invalid token posting! #{res}"
-
-    @del '/tokens/:id': ->
-        log "#{@request.method} #{@request.url}"
-        # 1. remove the token entry from DB
-        agent.remove 'TOKENS', @params.id, (res) =>
-            unless res instanceof Error
-                @send { deleted: true }
-            else
-                @send res
 
     @get '/rules': ->
         log "#{@request.method} #{@request.url}"

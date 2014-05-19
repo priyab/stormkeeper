@@ -30,14 +30,12 @@
 	"config": {
 		"port": 8333,
 		"logfile": "/var/log/stormkeeper.log",
-		"datadir": "/var/stormkeeper",
 		"storm": {
 			"agent": true,
 			"functions": [
-				"agent.getEntriesById",
-				"agent.add",
-				"agent.newEntry",
-				"agent.remove"
+				"agent.authorize",
+				"agent.tokens",
+				"agent.rules"
 			],
 			"plugins": [
 				"lib/plugin"
