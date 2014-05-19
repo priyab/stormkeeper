@@ -58,14 +58,14 @@ class StormKeeper extends StormAgent
             @db.tokensdb = db
             @log 'loaded tokens.db'
             db.forEach (key,val) ->
-                @log 'Tokens found ' + key if val
+                @log 'Tokens found ', key if val
 
         @newdb "#{@config.datadir}/rules.db", (err, db) =>
             return if err
             @db.rulesdb = db
             @log 'loaded rules.db'
             db.forEach (key,val) ->
-                @log 'Rules found ' + key if val
+                @log 'Rules found ', key if val
 
         setInterval (=>
             #@log "Cleanuptimer triggered for tokens"
@@ -84,7 +84,7 @@ class StormKeeper extends StormAgent
         return entry
 
     getRelativeDB: (type) ->
-        #@log 'DB type: ' + type
+        #@log 'DB type: ', type
         keeperDb = ''
         switch (type)
             when "TOKENS"
