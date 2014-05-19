@@ -6,7 +6,6 @@ StormKeeper = require './stormkeeper'
 @include = ->
 
     agent = @settings.agent
-    log = agent.log
 
     ###
     # only uncomment during development...
