@@ -57,14 +57,14 @@ class StormKeeper extends StormAgent
             return if err
             @db.tokensdb = db
             @log 'loaded tokens.db'
-            db.forEach (key,val) ->
+            db.forEach (key,val) =>
                 @log 'Tokens found ', key if val
 
         @newdb "#{@config.datadir}/rules.db", (err, db) =>
             return if err
             @db.rulesdb = db
             @log 'loaded rules.db'
-            db.forEach (key,val) ->
+            db.forEach (key,val) =>
                 @log 'Rules found ', key if val
 
         setInterval (=>
@@ -177,7 +177,7 @@ class StormKeeper extends StormAgent
 
     #This function is to decrement expiry in token
     DecrementExpiryInToken: (token,tokenTick) ->
-        @log 'Decrement Expiry In Token by '+tokenTick+'ms'
+        @log "Decrement Expiry In Token by #{tokenTick}ms"
         for tokenKey, tokenValue of token
             if tokenKey == 'expiry'
                 token[tokenKey] = (token[tokenKey] - tokenTick)
