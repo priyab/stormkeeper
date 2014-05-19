@@ -1,5 +1,5 @@
 StormAgent = require 'stormagent'
-StormData = StormAgent::StormData
+StormData = StormAgent.StormData
 
 class StormToken extends StormData
 
@@ -44,7 +44,7 @@ class StormRule extends StormData
 
 #-----------------------------------------------------------------
 
-StormRegistry = StormAgent::StormRegistry
+StormRegistry = StormAgent.StormRegistry
 
 class StormTokenRegistry extends StormRegistry
 
@@ -117,9 +117,6 @@ class StormKeeper extends StormAgent
         # will we have rules with expiry in the future?
         #@rules.expires @config.repeatdelay
 
-    StormToken: StormToken
-    StormRule:  StormRule
-
     # adds a new or update entry into tokens/rules registry
     authorize: (object, update) ->
         @log "authorize: ", object
@@ -149,3 +146,5 @@ class StormKeeper extends StormAgent
         res
 
 module.exports = StormKeeper
+module.exports.StormToken = StormToken
+module.exports.StormRule  = StormRule

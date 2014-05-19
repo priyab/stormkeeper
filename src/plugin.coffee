@@ -16,7 +16,7 @@ StormKeeper = require './stormkeeper'
 
     # API for /tokens
     @post '/tokens': ->
-        @send agent.authorize( new StormKeeper::StormToken( null,@body) )
+        @send agent.authorize( new StormKeeper.StormToken( null,@body) )
 
     @get '/tokens/:id': ->
         match = agent.tokens.get @params.id
@@ -49,7 +49,7 @@ StormKeeper = require './stormkeeper'
         @send agent.rules.list()
 
     @post '/rules': ->
-        @send agent.authorize new StormKeeper::StormRule null,@body
+        @send agent.authorize new StormKeeper.StormRule null,@body
 
     @get '/rules/:id': ->
         match = agent.rules.get @params.id
