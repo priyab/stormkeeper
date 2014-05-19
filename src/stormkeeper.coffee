@@ -25,49 +25,11 @@ class StormToken extends StormData
                         userEmail: {type:"string", required:false}
 
     constructor: (id, data) ->
-        return unless @validate data, schema
-        super id, data
+        super id, data, schema
 
-#-----------------------------------------------------------------
+class StormRule extends StormData
 
-StormRegistry = StormAgent::StormRegistry
-
-class StormTokenRegistry extends StormRegistry
-
-    constructor: (filename) ->
-        super filename
-
-        @on 'load', (key,val) ->
-            entry = new StormToken val
-            if entry?
-                entry.saved = true
-                @add key, entry
-
-        @on 'expired', (token) ->
-            token.destroy() if token.destroy?
-
-    get: (key) ->
-        entry = super key
-
-class StormRulesRegistry extends StormRegistry
-
-    constructor: (filename) ->
-        super filename
-
-
-#-----------------------------------------------------------------
-
-class StormKeeper extends StormAgent
-
-    #Stormkeeper decrements the db entries 'expiry' at every cleanupInterval
-    #Cleans up the entries when expiry is 0
-    cleanupInterval= (5 * 1000) # 5 seconds
-
-    #Stormkeeper default token expiry value
-    tokenMaxDuration = (240 * 1000) # 240 seconds
-
-    tokenschema =
-    ruleschema =
+    schema =
         name : "rules"
         type : "object"
         additionalProperties : false
@@ -76,6 +38,50 @@ class StormKeeper extends StormAgent
             name: {type:"string",required:false}
             rules: {type:"array",required:true}
             role: {type:"string",required:true}
+
+    constructor: (id, data) ->
+        super id, data, schema
+
+#-----------------------------------------------------------------
+
+StormRegistry = StormAgent::StormRegistry
+
+class StormTokenRegistry extends StormRegistry
+
+    constructor: (filename) ->
+        @on 'load', (key,val) ->
+            entry = new StormToken key,val
+            if entry?
+                entry.saved = true
+                @add key, entry
+
+        @on 'removed', (token) ->
+            token.destroy() if token.destroy?
+
+        super filename
+
+    get: (key) ->
+        entry = super key
+
+class StormRulesRegistry extends StormRegistry
+
+    constructor: (filename) ->
+        @on 'load', (key,val) ->
+            entry = new StormToken key,val
+            if entry?
+                entry.saved = true
+                @add key, entry
+
+        @on 'removed', (rule) ->
+
+        super filename
+
+    get: (key) ->
+        entry = super key
+
+#-----------------------------------------------------------------
+
+class StormKeeper extends StormAgent
 
     constructor: ->
         super
@@ -86,19 +92,6 @@ class StormKeeper extends StormAgent
 
         @tokens = new StormTokenRegistry "#{@config.datadir}/tokens.db"
         @rules  = new StormRulesRegistry "#{@config.datadir}/rules.db"
-
-        @on 'issued', (token) =>
-            if token?
-
-                unless token.id? # new token generated but not yet saved?
-                    tokendb.set( token.id, token.data, =>
-                        @emit 'changed'
-                    ) unless token.saved
-                @tokens[token.id] = token
-
-        @rules.on 'load', (key,val) ->
-            @add new StormRule val
-
 
     status: ->
         state = super
@@ -121,69 +114,41 @@ class StormKeeper extends StormAgent
 
         @tokens.expires @config.repeatdelay
 
-    # For POST /tokens, POST /rules endpoint
-    authorize: (token, callback) ->
-        if token? and entry.id
+        # will we have rules with expiry in the future?
+        #@rules.expires @config.repeatdelay
 
+    StormToken: StormToken
+    StormRule:  StormRule
 
-                @checkentryschema type, entry, (error) =>
-                    @log "entry:", entry
-                    unless error instanceof Error
-                        # add entry into stormkeeper db
-                        keeperdb = @getRelativeDB type
-                        @log "entry.id = #{entry.id}"
-                        keeperdb.set entry.id, entry, ->
-                            return callback(entry)
-                    else
-                        @log 'entry check: '+ error
-                        callback new Error "#{entry.id} entry not added!"
-            else
-                callback new Error "Invalid entry!!"
+    # adds a new or update entry into tokens/rules registry
+    authorize: (object, update) ->
+        @log "authorize: ", object
+        if object instanceof Error
+            throw object
+        if object instanceof StormToken
+            try
+                match = @rules.get object.data.ruleId
 
-    # To remove entry-id from DB
-    revoke: (type, entry, callback) ->
-        @log 'StormKeeper in DEL entry'
-        keeperdb = @getRelativeDB type
-        if entry?
-            keeperdb.rm entry.id, =>
-                @log "removed entry ID: #{entry.id}"
-                callback({result:200})
+                res = @tokens.add null, object
+            catch err
+                @log "error: ",err
+                return new Error "invalid reference to ruleId!"
+        if object instanceof StormRule
+            res = @rules.add null, object
 
-    checkentryschema: (type, entry, callback) ->
-        if type == 'TOKENS'
-            entryschema = tokenschema
-        if type == 'RULES'
-            entryschema = ruleschema
-        if entryschema?
-            @log 'performing entryschema validation on a new entry posting'
-            return new Error "Entry data is missing" unless entry
-            result = validate entry, entryschema
-            error = new Error("Invalid entry posting!")
-            throw error unless result.valid
-            callback(result)
-        else
-            return callback new Error("No valid schema to compare:")
-
-    getRules: (usertype, callback) ->
-        rules = {}
-        @db.rulesdb.forEach (key,rule) ->
-            if usertype?
-                for rulekey, rulevalue of rule
-                    if rulevalue == usertype
-                        return callback [ rule ]
-            else
-                # if the actual data is at the top
-                rules[key] = rule unless key in rules
-                # if the actual data is at the bottom
-                # rules[key] = rule
-        callback (entry for entry of rules)
-
-    # For PUT /tokens, PUT /rules endpoint
-    update: (type, entry, callback) ->
-        if type? and entry? and entry.id
-            @add type, entry, (res) =>
-                callback res if callback?
-        else
-            callback new Error "Could not find ID! #{id}" if callback?
+    # removes entry from tokens/rules registry
+    revoke: (object) ->
+        if object?
+            if object instanceof StormToken
+                @tokens.remove object.id
+                try
+                    match = @rules.get object.data.ruleId
+                    res = @tokens.add null, object
+                catch err
+                    @log "error: ",err
+                    return new Error "invalid reference to ruleId!"
+            if object instanceof StormRule
+                res = @rules.add null, object
+        res
 
 module.exports = StormKeeper
