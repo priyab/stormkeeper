@@ -67,7 +67,7 @@ class StormRulesRegistry extends StormRegistry
 
     constructor: (filename) ->
         @on 'load', (key,val) ->
-            entry = new StormToken key,val
+            entry = new StormRule key,val
             if entry?
                 entry.saved = true
                 @add key, entry
