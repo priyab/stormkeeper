@@ -126,13 +126,10 @@ class StormKeeper extends StormAgent
         if object instanceof Error
             throw object
         if object instanceof StormToken
-            try
-                match = @rules.get object.data.ruleId
-
-                res = @tokens.add null, object
-            catch err
-                @log "error: ",err
-                return new Error "invalid reference to ruleId!"
+            match = @rules.get object.data.ruleId
+            unless match?
+                throw new Error 'invalid reference to ruleId!'
+            res = @tokens.add null, object
         if object instanceof StormRule
             res = @rules.add null, object
 
