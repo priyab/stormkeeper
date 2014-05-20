@@ -20,7 +20,7 @@ StormKeeper = require './stormkeeper'
     @get '/tokens/:id': ->
         match = agent.tokens.get @params.id
         if match?
-            match.rule = agent.rules.get match.data.ruleId
+            match.rule = agent.rules.get match.ruleId
             @send match
         else
             @send 404
