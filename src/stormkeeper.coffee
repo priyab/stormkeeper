@@ -64,6 +64,7 @@ class StormTokenRegistry extends StormRegistry
         entry = super key
         return unless entry?
         entry.data.id = entry.id
+        entry.data.validity = entry.validity
         entry.data
 
 class StormRulesRegistry extends StormRegistry
