@@ -76,6 +76,7 @@ class StormRulesRegistry extends StormRegistry
                 @add key, entry
 
         @on 'removed', (rule) ->
+            rule.destroy() if rule.destroy?
 
         super filename
 
@@ -142,15 +143,8 @@ class StormKeeper extends StormAgent
         if object?
             if object instanceof StormToken
                 @tokens.remove object.id
-                try
-                    match = @rules.get object.data.ruleId
-                    res = @tokens.add null, object
-                catch err
-                    @log "error: ",err
-                    return new Error "invalid reference to ruleId!"
             if object instanceof StormRule
-                res = @rules.add null, object
-        res
+                @rules.remove object.id
 
 module.exports = StormKeeper
 module.exports.StormToken = StormToken
