@@ -31,7 +31,6 @@
 		"port": 8333,
 		"logfile": "/var/log/stormkeeper.log",
 		"storm": {
-			"agent": true,
 			"functions": [
 				"agent.authorize",
 				"agent.tokens",
@@ -43,10 +42,10 @@
 		}
 	},
 	"scripts": {
-		"prepublish": "find src -name '*.coffee' | xargs coffee -o lib -c",
-		"start": "node lib/app.js"
+		"prepublish": "mkdir -p lib; coffee -o lib -c src",
+		"start": "node lib/app"
 	},
 	"contributors": [
-		"Peter K Lee"
+		"Peter K. Lee <peter@intercloud.net>"
 	]
 }

@@ -62,6 +62,9 @@ class StormTokenRegistry extends StormRegistry
 
     get: (key) ->
         entry = super key
+        return unless entry?
+        entry.data.id = entry.id
+        entry.data
 
 class StormRulesRegistry extends StormRegistry
 
@@ -78,6 +81,9 @@ class StormRulesRegistry extends StormRegistry
 
     get: (key) ->
         entry = super key
+        return unless entry?
+        entry.data.id = entry.id
+        entry.data
 
 #-----------------------------------------------------------------
 
