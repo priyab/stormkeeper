@@ -20,8 +20,9 @@ StormKeeper = require './stormkeeper'
     @get '/tokens/:id': ->
         match = agent.tokens.get @params.id
         if match?
-            match.rule = agent.rules.get match.data.ruleId
-            @send match
+            copy = agent.extend( {}, match )
+            copy.rule = agent.rules.get match.data.ruleId
+            @send copy
         else
             @send 404
 
@@ -35,11 +36,10 @@ StormKeeper = require './stormkeeper'
             @send 404
         ###
 
-
     @del '/tokens/:id': ->
-        match = agent.tokens.get @params.id
+        match = agent.tokens.entries[@params.id]
         if match?
-            @send agent.revoke match ? 204
+            @send 204 if agent.revoke match
         else
             @send 404
 
@@ -68,8 +68,8 @@ StormKeeper = require './stormkeeper'
         ###
 
     @del '/rules/:id': ->
-        match = agent.rules.get @params.id
+        match = agent.rules.entries[@params.id]
         if match?
-            @send agent.revoke match ? 204
+            @send 204 if agent.revoke match
         else
             @send 404
