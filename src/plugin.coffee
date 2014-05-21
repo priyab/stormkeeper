@@ -39,7 +39,8 @@ StormKeeper = require './stormkeeper'
     @del '/tokens/:id': ->
         match = agent.tokens.entries[@params.id]
         if match?
-            @send 204 if agent.revoke match
+            agent.revoke match
+            @send 204 
         else
             @send 404
 
@@ -70,6 +71,7 @@ StormKeeper = require './stormkeeper'
     @del '/rules/:id': ->
         match = agent.rules.entries[@params.id]
         if match?
-            @send 204 if agent.revoke match
+            agent.revoke match
+            @send 204 
         else
             @send 404

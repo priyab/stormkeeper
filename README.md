@@ -235,40 +235,30 @@ GET http://stormkeeper:8333/tokens/:id
 ### Response JSON
 
     {
-        "id": "8d41e531-519b-40cc-88cd-9abe95498ef1",
-        "data": {
-                "name": "token1",
-                "domainId": "abcdc127-bf53-44a6-9bc4-46e0d293efgh",
-                "identityId": "ijklc127-bf53-44a6-9bc4-46e0d293mnop",
-                "ruleId": "05686306-0db7-4bd2-98fb-19a0e0440f19",
-                "validity": 300,
-                "lastModified": "timestamp",
-                "userData": [
-                {
-                    "accountId": "qrstc127-bf53-44a6-9bc4-46e0d293zkmn",
-                    "userEmail": "sbusa@clearpathnet.com"
-                }
-                ]
-        },
-        "validity": 275,
-        "saved": true,
-        "rule": {
-                "id": "05686306-0db7-4bd2-98fb-19a0e0440f19",
-                "data": {
-                        "name": "specific",
-                        "rules": [
-                            "POST /domains/:id/policies",
-                            "PUT /domains/:id/policies/:id",
-                            "GET /domains/:id/policies",
-                            "POST /domains/:id/metapolicy/:id/groups"
-                        ],
-                        "role": "admin",
-                        "id": "05686306-0db7-4bd2-98fb-19a0e0440f19"
-                },
-                "saved": true
-        }
-    }
-
+	"id": "3964ca98-a13a-4618-af5c-70df002929ed",
+	"userData": [
+	{
+	    "accountId": "qrstc127-bf53-44a6-9bc4-46e0d293zkmn",
+	    "userEmail": "sivaprasathb@calsoftlabs.com"
+	}
+	],
+	"lastModified": "timestamp",
+	"validity": 80,
+	"ruleId": "3daeffb0-d83d-43a6-ab9c-e56600be677b",
+	"identityId": "ijklc127-bf53-44a6-9bc4-46e0d293mnop",
+	"domainId": "abcdc127-bf53-44a6-9bc4-46e0d293efgh",
+	"name": "siva",
+	"rule": {
+	    "name": "specific",
+	    "rules": [
+	    "GET /agents/serialkey/:key",
+	    "GET /agents/:id/bolt",
+	    "POST /agents/:id/csr"
+	    ],
+	    "role": "agent",
+	    "id": "3daeffb0-d83d-43a6-ab9c-e56600be677b"
+	}
+    } 
 
 **DELETE Tokens API**
 
