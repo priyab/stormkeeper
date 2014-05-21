@@ -137,7 +137,8 @@ class StormKeeper extends StormAgent
             res = @tokens.add null, object
         if object instanceof StormRule
             res = @rules.add null, object
-        res
+        res.data.id = res.id
+        res.data
 
     # removes entry from tokens/rules registry
     revoke: (object) ->

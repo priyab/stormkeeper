@@ -54,19 +54,17 @@ On success it returns JSON data with the UUID with the rules configuration.
 ### Response JSON
 
     {
-	"id": "83997da9-63d7-46e6-aea0-7a44e8ce951b",
-	"data": {
-		"name": "admin1",
-		"rules": [
-			"POST /domains/:id/policies",
-			"PUT /domains/:id/policies/:id",
-			"GET /domains/:id/policies",
-			"POST /domains/:id/metapolicy/:id/groups"
-		],
-		"role": "admin"
-	},
-	"saved": true
+        "name": "admin1",
+        "rules": [
+            "POST /domains/:id/policies",
+            "PUT /domains/:id/policies/:id",
+            "GET /domains/:id/policies",
+            "POST /domains/:id/metapolicy/:id/groups"
+        ],
+        "role": "admin1",
+        "id": "25af4100-391b-4f46-b0c9-6774cedce6f8"
     }
+
 
 **GET List API**
 
@@ -80,59 +78,59 @@ GET http://stormkeeper:8333/rules
 ### Response JSON
 
     [
-	{
-	    "id": "05686306-0db7-4bd2-98fb-19a0e0440f19",
-	    "data": {
-		"name": "specific",
-		"rules": [
-			"POST /domains/:id/policies",
-			"PUT /domains/:id/policies/:id",
-			"GET /domains/:id/policies",
-			"POST /domains/:id/metapolicy/:id/groups"
-		],
-		"role": "admin",
-	    },
-	    "saved": true
-	},
-	{
-	    "id": "3daeffb0-d83d-43a6-ab9c-e56600be677b",
-	    "data": {
-		"name": "specific",
-		"rules": [
-		    "GET /agents/serialkey/:key",
-		    "GET /agents/:id/bolt",
-		    "POST /agents/:id/csr"
-		],
-	    "role": "agent",
-	    },
-	"saved": true
-    	},
-	{
-	    "id": "063c8c14-dec2-4859-9a96-a413b06f1e0d",
-	    "data": {
-		"name": "super",
-		"rules": [
-			"*"
-		],
-		"role": "super-admin"
-	    },
-	    "saved": true
+        {
+	    "name": "specific",
+	    "rules": [
+		"POST /domains/:id/policies",
+	        "PUT /domains/:id/policies/:id",
+		"GET /domains/:id/policies",
+		"POST /domains/:id/metapolicy/:id/groups"
+	     ],
+	     "role": "admin",
+	     "id": "05686306-0db7-4bd2-98fb-19a0e0440f19"
         },
-	{
-	    "id": "83997da9-63d7-46e6-aea0-7a44e8ce951b",
-	    "data": {
-		"name": "admin1",
-		"rules": [
-			"POST /domains/:id/policies",
-			"PUT /domains/:id/policies/:id",
-			"GET /domains/:id/policies",
-			"POST /domains/:id/metapolicy/:id/groups"
-		],
-		"role": "admin"
-	    },
-	    "saved": true
-	}
+        {
+	    "name": "specific",
+	    "rules": [
+	        "GET /agents/serialkey/:key",
+	        "GET /agents/:id/bolt",
+	        "POST /agents/:id/csr"
+ 	    ],
+	    "role": "agent",
+	    "id": "3daeffb0-d83d-43a6-ab9c-e56600be677b"
+        },
+        {
+	    "name": "super",
+	    "rules": [
+	        "*"
+            ],
+	    "role": "super-admin",
+	    "id": "063c8c14-dec2-4859-9a96-a413b06f1e0d"
+        },
+        {
+	    "name": "admin1",
+	    "rules": [
+	         "POST /domains/:id/policies",
+	         "PUT /domains/:id/policies/:id",
+	         "GET /domains/:id/policies",
+	         "POST /domains/:id/metapolicy/:id/groups"
+             ],
+	     "role": "admin1",
+	     "id": "83997da9-63d7-46e6-aea0-7a44e8ce951b"
+        },
+        {
+	    "name": "admin1",
+	     "rules": [
+	         "POST /domains/:id/policies",
+	         "PUT /domains/:id/policies/:id",
+	         "GET /domains/:id/policies",
+	         "POST /domains/:id/metapolicy/:id/groups"
+             ],
+	     "role": "admin1",
+	     "id": "fcb60644-8ced-4a91-beca-c5ecf0ac84ae"
+        }
     ]
+
 
 **GET List API**
 
@@ -147,18 +145,15 @@ GET http://stormkeeper:8333/rules/:id
 ### Response JSON
 
     {
-	"id": "83997da9-63d7-46e6-aea0-7a44e8ce951b",
-	"data": {
-            "name": "admin1",
-	    "rules": [
-	    "POST /domains/:id/policies",
-	    "PUT /domains/:id/policies/:id",
-	    "GET /domains/:id/policies",
-	    "POST /domains/:id/metapolicy/:id/groups"
-	    ],
-	"role": "admin"
-	},
-	"saved": true
+        "name": "admin1",
+        "rules": [
+            "POST /domains/:id/policies",
+            "PUT /domains/:id/policies/:id",
+            "GET /domains/:id/policies",
+            "POST /domains/:id/metapolicy/:id/groups"
+        ],
+        "role": "admin1",
+        "id": "fcb60644-8ced-4a91-beca-c5ecf0ac84ae"
     }
 
 
@@ -201,25 +196,22 @@ On success it returns JSON data with the UUID with the tokens configuration.
 
 ### Response JSON
 
-    {   
-	"id": "8d41e531-519b-40cc-88cd-9abe95498ef1",
-	"data": {
-	    "name": "token1",
-	    "domainId": "abcdc127-bf53-44a6-9bc4-46e0d293efgh",
-	    "identityId": "ijklc127-bf53-44a6-9bc4-46e0d293mnop",
-	    "ruleId": "05686306-0db7-4bd2-98fb-19a0e0440f19",
-	    "validity": 300,
-	    "lastModified": "timestamp",
-	    "userData": [
-	    {
-		"accountId": "qrstc127-bf53-44a6-9bc4-46e0d293zkmn",
-		"userEmail": "sbusa@clearpathnet.com"
-	    }
-	    ]
-	},
+    {
+	"name": "token1",
+	"domainId": "abcdc127-bf53-44a6-9bc4-46e0d293efgh",
+	"identityId": "ijklc127-bf53-44a6-9bc4-46e0d293mnop",
+	"ruleId": "05686306-0db7-4bd2-98fb-19a0e0440f19",
 	"validity": 300,
-	"saved": true
-    }
+	"lastModified": "timestamp",
+	"userData": [
+	{
+	    "accountId": "qrstc127-bf53-44a6-9bc4-46e0d293zkmn",
+	    "userEmail": "sbusa@clearpathnet.com"
+	}
+	],
+	"id": "c58bcee8-cafe-4f46-bf24-d4e01347ed68"
+    } 
+
 
 
 **GET List API**
