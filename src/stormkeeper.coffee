@@ -151,3 +151,32 @@ class StormKeeper extends StormAgent
 module.exports = StormKeeper
 module.exports.StormToken = StormToken
 module.exports.StormRule  = StormRule
+
+#-------------------------------------------------------------------------------------------
+
+if require.main is module
+
+    ###
+    argv = require('optimist')
+        .usage('Start stormkeeper with a configuration file.\nUsage: $0')
+        .demand('c')
+        .default('c','/etc/stormstack/stormkeeper.json')
+        .alias('c', 'config')
+        .describe('c', 'location of stormkeeper configuration file')
+        .argv
+
+    util=require('util')
+
+    util.log "stormkeeper coming up as new storm token collector..."
+    ###
+
+    config = null
+    storm = null # override during dev
+    agent = new StormKeeper config
+    agent.run storm
+
+    # Garbage collect every 2 sec
+    # Run node with --expose-gc
+    setInterval (
+        () -> gc()
+    ), 2000 if gc?
