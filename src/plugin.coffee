@@ -20,7 +20,7 @@ StormKeeper = require './stormkeeper'
     @get '/tokens/:id': ->
         match = agent.tokens.get @params.id
         if match?
-            copy = agent.extend( {}, match )
+            copy = require('util')._extend( {}, match )
             copy.rule = agent.rules.get match.ruleId
             @send copy
         else

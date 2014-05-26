@@ -1,7 +1,7 @@
 {
     "name": "stormkeeper",
 	"description": "stormkeeper provides support for managing Auth Tokens requested by BiS components",
-	"version": "0.1.5",
+	"version": "0.1.6",
 	"author": "Sivaprasath Busa",
 	"homepage": "http://stormstack.org",
 	"repository": {
