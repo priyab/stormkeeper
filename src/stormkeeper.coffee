@@ -134,9 +134,9 @@ class StormKeeper extends StormAgent
             match = @rules.get object.data.ruleId
             unless match?
                 throw new Error 'invalid reference to ruleId!'
-            res = @tokens.add null, object
+            res = @tokens.add object.id, object
         if object instanceof StormRule
-            res = @rules.add null, object
+            res = @rules.add object.id, object
         res.data.id = res.id
         res.data
 
