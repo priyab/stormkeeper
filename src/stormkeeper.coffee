@@ -98,8 +98,9 @@ class StormKeeper extends StormAgent
         # private functions
         @log 'stormkeeper constructor called'
 
-        @tokens = new StormTokenRegistry "#{@config.datadir}/tokens.db"
-        @rules  = new StormRulesRegistry "#{@config.datadir}/rules.db"
+        fs.mkdir "#{@config.datadir}", (result) =>
+            @tokens = new StormTokenRegistry "#{@config.datadir}/tokens.db"
+            @rules  = new StormRulesRegistry "#{@config.datadir}/rules.db"
 
     status: ->
         state = super
