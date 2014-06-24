@@ -91,16 +91,19 @@ class StormRulesRegistry extends StormRegistry
 
 class StormKeeper extends StormAgent
 
-    constructor: ->
+    fs = require 'fs'
+
+    constructor: (config) ->
         super
         @import module
 
         # private functions
-        @log 'stormkeeper constructor called'
+        @log 'stormkeeper constructor called', @config.datadir
 
-        fs.mkdir "#{@config.datadir}", (result) =>
-            @tokens = new StormTokenRegistry "#{@config.datadir}/tokens.db"
-            @rules  = new StormRulesRegistry "#{@config.datadir}/rules.db"
+        fs.mkdir "#{@config.datadir}", (result) ->
+
+        @tokens = new StormTokenRegistry "#{@config.datadir}/tokens.db"
+        @rules  = new StormRulesRegistry "#{@config.datadir}/rules.db"
 
     status: ->
         state = super
