@@ -1,0 +1,11 @@
+{
+	"port" : 8333,
+	"serialKey" : "uuid",
+	"logfile"  : "/var/log/stormkeeper.log",
+	"datadir"  : "/var/stormkeeper",
+	"notifications":
+	{
+		"server" : "none",
+		"topic" : "notifications.info"
+	},
+}
