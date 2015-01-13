@@ -3,22 +3,34 @@
 assert = require("chai").assert
 expect = require("chai").expect
 should = require("chai").should
+extend = require('util')._extend
 StormKeeper = require("../src/stormkeeper")
 config = require("../package.json").config
 StormToken = StormKeeper.StormToken
 StormRule = StormKeeper.StormRule
 
+ruleObject = null
+tokenObject = null
+agentRuleID = null
+adminRuleID = null
+agentTokenID = null
+adminTokenID = null
 
 ## test data for StormRule
 ruleValidJSONall =
     name: "name1"
     rules: [ "GET /agents/serialkey/:key", "GET /agents/:id/bolt" ]
     role: "agent"
-    
+
+ruleValidRoleAdmin =
+    name: "name1"
+    rules: [ "POST /domains", "GET /domains/:id" , "PUT /domains/:id" , "DELETE /domains/:id" ]
+    role: "admin"
+
 ruleValidJSONnoName =
     rules: [ "GET /agents/serialkey/:key", "GET /agents/:id/bolt" ]
     role: "agent"
-    
+
 ruleValidJSONemptyRules =
     rules: []
     name: "name2"
@@ -190,7 +202,6 @@ describe "--- StormKeeper Testing", ->
 
 
     describe "--- StormRule Schema Validations", ->
-
         it "1. Check stormrule with all fields", ->
             rule = new StormRule(null,ruleValidJSONall)
             expect(rule).to.be.an.instanceof(StormRule)
@@ -213,7 +224,16 @@ describe "--- StormKeeper Testing", ->
             expect(rule.data).to.contain.key('role')
             expect(rule.data).to.contain.key('rules')
 
-        it "4. check stormrule without mandatory field 'role'", ->
+        it "4. Check stormrule with role as 'admin'", ->
+            rule = new StormRule(null,ruleValidRoleAdmin)
+            expect(rule).to.be.an.instanceof(StormRule)
+            expect(rule).to.contain.key('id')
+            expect(rule.data).to.contain.key('name')
+            expect(rule.data).to.contain.key('role')
+            expect(rule.data).to.contain.key('rules')
+            expect(rule.data.role).to.equal('admin')
+
+        it "5. check stormrule without mandatory field 'role'", ->
             #expect(new StormRule(null,ruleInvalidJSONnoRole)).to.throw(Error)
             #expect(new StormRule(null,ruleInvalidJSONnoRole)).to.be.an.instanceof(Error)
             #expect(new StormRule(null,ruleInvalidJSONnoRole)).to.throw("unable to validate passed in data during StormData creation! { valid: false,\n  errors: [ { property: 'role', message: 'is missing and it is required' } ] }")
@@ -228,7 +248,6 @@ describe "--- StormKeeper Testing", ->
                 expect(error.message).to.have.string("role")
 
     describe "--- StormToken Schema Validations", ->
-
         it "01. check stormtoken with all fields", ->
             token = new StormToken(null,tokenValidJSONall)
             expect(token).to.be.an.instanceof(StormToken)
@@ -378,18 +397,85 @@ describe "--- StormKeeper Testing", ->
                 expect(error.message).to.have.string("expected { Object (id, data, ...) } to be a function")
 
 
-    describe "--- StormRule DB with realtime data", ->
+    describe "--- Stormkeeper adding realtime data to DB", ->
+        it "1. Check stormrule with 'agent' role is added to DB", ->
+            preSizeOfRuleDB = keeper.status().rules.length
+            ruleObject = keeper.authorize(new StormRule(null,ruleValidJSONall))
+            expect(ruleObject).to.contain.key('id')
+            expect(ruleObject).to.contain.key('name')
+            expect(ruleObject.name).to.equal(ruleValidJSONall.name)
+            expect(ruleObject).to.contain.key('role')
+            expect(ruleObject.role).to.equal(ruleValidJSONall.role)
+            expect(ruleObject).to.contain.key('rules')
+            expect(ruleObject.rules).to.equal(ruleValidJSONall.rules)
+            expect(keeper.status().rules.length).to.equal(preSizeOfRuleDB+1)
+            agentRuleID = ruleObject.id
 
-        it "1. Check stormrule is added to DB", ->
-            rule = keeper.authorize(new StormRule(null,ruleValidJSONall))
+        it "2. Check stormrule with 'admin' role is added to DB", ->
+            preSizeOfRuleDB = keeper.status().rules.length
+            rule = keeper.authorize(new StormRule(null,ruleValidRoleAdmin))
             expect(rule).to.contain.key('id')
             expect(rule).to.contain.key('name')
-            expect(rule.name).to.equal(ruleValidJSONall.name)
+            expect(rule.name).to.equal(ruleValidRoleAdmin.name)
             expect(rule).to.contain.key('role')
-            expect(rule.role).to.equal(ruleValidJSONall.role)
+            expect(rule.role).to.equal(ruleValidRoleAdmin.role)
             expect(rule).to.contain.key('rules')
-            expect(rule.rules).to.equal(ruleValidJSONall.rules)
+            expect(rule.rules).to.equal(ruleValidRoleAdmin.rules)
+            expect(keeper.status().rules.length).to.equal(preSizeOfRuleDB+1)
+            adminRuleID = rule.id
 
+        it "3. Check stormtoken with 'agent' role is added to DB", ->
+            preSizeOfTokenDB = keeper.status().tokens.length
+            tokenValidJSON = extend {}, tokenValidJSONall
+            tokenValidJSON.ruleId = agentRuleID
+            tokenObject = keeper.authorize(new StormToken(null,tokenValidJSON))
+            expect(tokenObject).to.contain.key('id')
+            expect(tokenObject).to.contain.key('ruleId')
+            expect(tokenObject).to.contain.key('domainId')
+            expect(tokenObject).to.contain.key('identityId')
+            expect(tokenObject).to.contain.key('validity')
+            expect(tokenObject).to.contain.key('name')
+            expect(tokenObject).to.contain.key('lastModified')
+            expect(tokenObject).to.contain.key('name')
+            expect(tokenObject.userData).to.be.a('array')
+            expect(tokenObject.userData[0]).to.contain.key('accountId')
+            expect(tokenObject.userData[0]).to.contain.key('userEmail')
+            expect(tokenObject.name).to.equal(tokenValidJSON.name)
+            expect(tokenObject.ruleId).to.equal(agentRuleID)
+            expect(keeper.status().tokens.length).to.equal(preSizeOfTokenDB+1)
+            agentTokenID = tokenObject.id
+
+        it "4. Check stormtoken with 'admin' role is added to DB", ->
+            preSizeOfTokenDB = keeper.status().tokens.length
+            tokenValidJSON = extend {}, tokenValidJSONall
+            tokenValidJSON.ruleId = adminRuleID
+            token = keeper.authorize(new StormToken(null,tokenValidJSON))
+            expect(token).to.contain.key('id')
+            expect(token).to.contain.key('ruleId')
+            expect(token).to.contain.key('domainId')
+            expect(token).to.contain.key('identityId')
+            expect(token).to.contain.key('validity')
+            expect(token).to.contain.key('name')
+            expect(token).to.contain.key('lastModified')
+            expect(token).to.contain.key('name')
+            expect(token.userData).to.be.a('array')
+            expect(token.userData[0]).to.contain.key('accountId')
+            expect(token.userData[0]).to.contain.key('userEmail')
+            expect(token.name).to.equal(tokenValidJSON.name)
+            expect(token.ruleId).to.equal(adminRuleID)
+            expect(keeper.status().tokens.length).to.equal(preSizeOfTokenDB+1)
+            adminTokenID = token.id
+
+    describe "--- Stormkeeper revoking entries from stormregistry", ->
+        it "1. Check stormrule with 'agent' role is revoked from rule list", ->
+            preSizeOfRuleDB = keeper.status().rules.length
+            ruleOutput = keeper.revoke(ruleObject)
+            expect(keeper.status().rules.length).to.equal(preSizeOfRuleDB-1)
+
+        it "2. Check stormtoken with 'agent' role is revoked from agent list", ->
+            preSizeOfTokenDB = keeper.status().tokens.length
+            ruleOutput = keeper.revoke(tokenObject)
+            expect(keeper.status().tokens.length).to.equal(preSizeOfTokenDB-1)
 
 return
 
